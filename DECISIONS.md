@@ -90,3 +90,88 @@ learning the administrative surface rather than minimising footprint.
 
 **Rejected VirtualBox unattended installation** so the setup steps are
 performed manually and can be described accurately.
+
+---
+
+## Static IP addressing — 192.168.1.10
+
+**Chose:** static IPv4 at `192.168.1.10/24`, gateway `192.168.1.1`, DNS
+pointing at `127.0.0.1`.
+
+**Why static:** a domain controller also hosts DNS for the domain, and clients
+locate the domain by querying it at a fixed address. Under DHCP the address
+would eventually change and domain resolution would break.
+
+**Why DNS points at itself:** the DC is the authoritative DNS server for
+`corp.northbridge.local` and has to resolve its own domain records. Pointing
+DNS at the router instead is a common mistake that causes domain join failures
+with no obvious cause.
+
+**Address choice:** `.10` sits below the typical consumer DHCP pool start of
+`.100`, avoiding collision. *Open item: confirm the router's actual pool range.*
+
+**Later addition:** `::1` added alongside `127.0.0.1` so IPv6 resolution
+targets the local DNS server too, which silenced a class of dcdiag warnings.
+
+---
+
+## Forest creation — corp.northbridge.local / NORTHBRIDGE
+
+    Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+    Install-ADDSForest -DomainName "corp.northbridge.local" `
+                       -DomainNetbiosName "NORTHBRIDGE" -InstallDns
+
+**Result:** new forest, domain functional level `Windows2016Domain`, all five
+FSMO roles held by NB-DC01, DNS zones created for `corp.northbridge.local`,
+`_msdcs`, `ForestDnsZones` and `DomainDnsZones`.
+
+**NetBIOS name set explicitly.** The default would have been `CORP`, derived
+from the first domain label. `NORTHBRIDGE` was chosen so the legacy login
+format reads `NORTHBRIDGE\username` rather than something generic.
+
+**On the functional level:** `Windows2016Domain` is the highest available —
+Microsoft stopped raising domain functional levels after 2016, so Server 2019
+and 2022 both top out there. Not a limitation of this build.
+
+---
+
+## Issue — SRV records failed to register after rename
+
+**Symptom:** `dcdiag /test:dns` failed the RReg (record registration) subtest.
+Dozens of missing SRV records reported — `_ldap._tcp`, `_kerberos._tcp`,
+`_gc._tcp` and others — against both `192.168.1.10` and `::1`. Every other DNS
+subtest passed: Auth, Basc, Forw, Del, Dyn.
+
+**Cause:** the server was promoted to domain controller while still carrying
+its default install hostname (`WIN-F2MRU4V827L`), and renamed to `NB-DC01`
+afterwards. Netlogon had registered the domain's SRV records against the
+original hostname, so no records existed pointing at the new name.
+
+**Fix:**
+
+    Restart-Service Netlogon
+    ipconfig /registerdns
+
+Re-tested with `dcdiag /test:dns` — RReg passed.
+
+**Lesson:** rename the server *before* promoting it to a domain controller.
+Renaming afterwards is supported and does update service principal names, but
+it leaves stale DNS registrations that must be forced to re-register. Doing it
+before promotion avoids the problem entirely.
+
+---
+
+## Verification — post-promotion health checks
+
+Run to confirm the forest was healthy before proceeding:
+
+| Check | Result |
+|---|---|
+| `Get-ADDomain` | Forest details returned correctly |
+| `Get-Service adws, kdc, netlogon, dns` | All Running |
+| `Get-SmbShare` for SYSVOL / NETLOGON | Both shared |
+| `dcdiag /test:dns` | All subtests pass |
+| `Test-NetConnection 8.8.8.8` | True |
+
+SYSVOL and NETLOGON existing as shares is the signal that promotion completed
+properly rather than partially.
