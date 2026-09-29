@@ -1,0 +1,32 @@
+EmployeeID,FirstName,LastName,Department,JobTitle,Manager,StartDate,EndDate,EmployeeType
+NB1001,Marcus,Webb,Finance,Finance Manager,,2024-03-11,,Permanent
+NB1002,Priya,Raman,Finance,Finance Staff,NB1001,2024-07-22,,Permanent
+NB1003,Daniel,Osei,Finance,Finance Staff,NB1001,2025-01-15,,Permanent
+NB1004,Sofia,Marchetti,HR,HR Staff,,2023-09-05,,Permanent
+NB1005,Grace,Lindqvist,HR,HR Staff,NB1004,2025-04-28,,Permanent
+NB1006,Omar,Haddad,IT,IT Staff,,2023-02-13,,Permanent
+NB1007,Nina,Volkov,IT,IT Staff,NB1006,2025-06-02,,Permanent
+NB1008,Terrence,Boyle,Sales,Sales Staff,,2024-01-08,,Permanent
+NB1009,Amara,Nwosu,Sales,Sales Staff,NB1008,2024-11-18,,Permanent
+NB1010,Lukas,Brenner,Sales,Sales Staff,NB1008,2025-08-11,,Permanent
+NB1011,Rosa,Delgado,Marketing,Marketing Staff,,2024-05-20,,Permanent
+NB1012,Kwame,Asante,Marketing,Marketing Staff,NB1011,2025-03-17,,Permanent
+NB1013,Bridget,Kowalski,Warehouse,Warehouse Supervisor,,2022-06-06,,Permanent
+NB1014,Hector,Salvatierra,Warehouse,Warehouse Supervisor,,2023-10-23,,Permanent
+NB1015,Yusuf,Demir,Warehouse,Warehouse Staff,NB1013,2024-02-12,,Permanent
+NB1016,Elena,Popescu,Warehouse,Warehouse Staff,NB1013,2024-08-19,,Permanent
+NB1017,Malik,Johnson,Warehouse,Warehouse Staff,NB1014,2025-01-27,,Permanent
+NB1018,Fatima,Cisse,Warehouse,Warehouse Staff,NB1014,2025-05-12,,Permanent
+NB1019,Vincent,O'Rourke,Warehouse,Warehouse Staff,NB1013,2025-09-08,,Permanent
+NB1020,Jae,Moon,Dispatch,Dispatch Staff,,2023-04-17,,Permanent
+NB1021,Carla,Benitez,Dispatch,Dispatch Staff,NB1020,2024-09-30,,Permanent
+NB1022,Ibrahim,Toure,Dispatch,Dispatch Staff,NB1020,2025-07-14,,Permanent
+NB1023,Dale,Ferguson,Drivers,Driver,NB1020,2023-11-06,,Permanent
+NB1024,Anika,Sharma,Drivers,Driver,NB1020,2024-06-24,,Permanent
+NB1025,Tomasz,Nowak,Drivers,Driver,NB1020,2025-02-10,,Permanent
+NB1026,Reggie,Maddox,Drivers,Driver,NB1020,2025-08-25,,Permanent
+NB1027,Sunny,Patel,Warehouse,Seasonal Warehouse,NB1013,2026-09-01,2026-12-31,Seasonal
+NB1028,Marco,Ferreira,Warehouse,Seasonal Warehouse,NB1013,2026-09-01,2026-12-31,Seasonal
+NB1029,Leila,Baptiste,Warehouse,Seasonal Warehouse,NB1014,2026-09-15,2026-12-31,Seasonal
+NB1030,Greg,Tanaka,IT,Contractor,NB1006,2026-08-01,2026-11-30,Contractor
+NB1031,Hana,Oyelaran,Marketing,Contractor,NB1011,2026-07-15,2027-01-15,Contractor
