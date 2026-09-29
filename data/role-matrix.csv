@@ -1,0 +1,13 @@
+JobTitle,TargetOU,RoleGroup,AccountExpires
+Finance Manager,OU=Finance;OU=Corporate,ROLE_Finance_Manager,No
+Finance Staff,OU=Finance;OU=Corporate,ROLE_Finance_Staff,No
+HR Staff,OU=HR;OU=Corporate,ROLE_HR_Staff,No
+IT Staff,OU=IT;OU=Corporate,ROLE_IT_Staff,No
+Sales Staff,OU=Sales;OU=Corporate,ROLE_Sales_Staff,No
+Marketing Staff,OU=Marketing;OU=Corporate,ROLE_Marketing_Staff,No
+Warehouse Supervisor,OU=Warehouse;OU=Operations,ROLE_Warehouse_Supervisor,No
+Warehouse Staff,OU=Warehouse;OU=Operations,ROLE_Warehouse_Staff,No
+Dispatch Staff,OU=Dispatch;OU=Operations,ROLE_Dispatch_Staff,No
+Driver,OU=Drivers;OU=Operations,ROLE_Driver,No
+Seasonal Warehouse,OU=Seasonal;OU=External,ROLE_Seasonal_Warehouse,Yes
+Contractor,OU=Contractors;OU=External,ROLE_Contractor,Yes
