@@ -386,3 +386,91 @@ will depend on. Enabled now so the logs exist by the time they are needed.
 takes effect when linked at the domain root. An OU-linked account policy is
 silently ignored — a Windows behaviour worth knowing before debugging why a
 policy "did not apply."
+
+---
+
+## Provisioning — HR feed as the authoritative source
+
+**Chose:** a CSV standing in for an HR system, with a separate role matrix
+mapping job titles to target OUs and role groups.
+
+**Why two files rather than logic in the script:** access policy changes far
+more often than code does. Adding a "Dispatch Supervisor" role should mean
+editing a CSV, not editing and redeploying a script. The matrix is also
+readable by a non-engineer, which matters because the people who own access
+decisions usually are not engineers. In an audit, "here is the file that
+defines our access model" is a better answer than "it is in the code
+somewhere."
+
+**Policy in the matrix, data in the feed.** The matrix says whether a *kind* of
+role should have an expiry date; the feed carries the actual date per person.
+Same separation applied throughout.
+
+**CSV gotcha:** `TargetOU` stores the path with semicolons because a
+distinguished name is comma-separated, and commas inside a CSV field break the
+parser. The script swaps them back at runtime.
+
+---
+
+## Idempotency — the script is safe to re-run
+
+**Chose:** check for an existing account before creating, skip if found.
+
+**Why it matters:** a real HR feed sends the entire employee population every
+run, not a delta. The script has to distinguish "already handled" from "new"
+or it either errors out or creates duplicates. Verified by running twice — the
+second run reported EXISTS for all 31 accounts and changed nothing.
+
+**Matched on `SamAccountName`, not `EmployeeID`.** This works for the current
+data but is the weaker choice: two people named Vincent O'Rourke would collide,
+and `EmployeeID` is the stable key that survives a name change. Matching on
+EmployeeID would be more correct. Left as-is for now and noted as a known
+limitation.
+
+---
+
+## Error handling in the provisioning script
+
+Three failure paths, each handled rather than allowed to stop the run:
+
+- **Unknown job title** — logged as SKIPPED and the loop continues. A script
+  that silently ignores unmapped titles is how people quietly end up with no
+  account.
+- **Account creation failure** — wrapped in try/catch, logged as FAILED with
+  the exception message. One bad record should not prevent the remaining
+  accounts from provisioning.
+- **Missing or not-yet-created manager** — department heads have no manager,
+  and the feed is not ordered by hierarchy, so a manager may not exist yet when
+  their report is processed. Both cases are checked before the assignment.
+
+**Name sanitisation:** non-letter characters are stripped before building the
+account name, which is what handles `O'Rourke`. Truncated to 20 characters,
+the `SamAccountName` limit in Active Directory.
+
+**`EmployeeID` written to every account.** This is the link back to the HR
+system. Without it there is no way to reconcile the directory against the
+source of truth, which is the foundation of the access review.
+
+**Manager written to every account** because an access review needs an
+approver. Without it there is nobody to send the quarterly certification to.
+
+**Lab shortcut noted:** a single shared temporary password, with
+`ChangePasswordAtLogon` set so it is usable once. In production this would be
+a random password per user, delivered out of band.
+
+---
+
+## Observation — accounts with no HR record
+
+After provisioning, three accounts exist in the directory with no corresponding
+HR record: `admin-t0`, `admin-t1`, `admin-t2`.
+
+This is correct — they are the tiered administrative accounts, created
+deliberately and outside the HR-driven population. But it is exactly the
+category an access review should surface: *accounts that do not reconcile
+against the authoritative source*. A real environment would carry a documented
+exception list so legitimate non-HR accounts can be distinguished from
+orphaned ones.
+
+Noted here because the access review being built later needs to handle this
+distinction rather than flagging known-good admin accounts as findings.
